@@ -1,0 +1,7 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - before: gp open CSRBfsTweaks.c
+  - openMode: split-left
+    command: make
