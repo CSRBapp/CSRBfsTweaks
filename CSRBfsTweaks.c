@@ -3,7 +3,11 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <limits.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include <sys/stat.h>
 
 #define INTERCEPT_RENAMEAT
@@ -27,17 +31,18 @@ unsigned CSRBfsTweaksInitDebugEnabled = 0;
 		DEBUG_FORCE(__VA_ARGS__); \
 	}
 
-
 extern char **environ;
 
 __attribute__((constructor)) static void CSRBfsTweaksInit(void)
 {
+	//DEBUG_FORCE("*** START\n");
 	static int initialised = 0;
 	if(initialised)
 	{
 		return;
 	}
 	initialised = 1;
+	//DEBUG_FORCE("*** INITIALISING\n");
 
 #if 0
 	char ** env;
@@ -57,12 +62,14 @@ __attribute__((constructor)) static void CSRBfsTweaksInit(void)
 	}
 
 	original_rename = dlsym(RTLD_NEXT, "rename");
+#ifdef INTERCEPT_RENAMEAT
 	original_renameat = dlsym(RTLD_NEXT, "renameat");
 	original_renameat2 = dlsym(RTLD_NEXT, "renameat2");
+#endif
 
 	original_pathconf = dlsym(RTLD_NEXT, "pathconf");
 
-	/* TODO: asset the backedup symbols */
+	/* TODO: assert the backedup symbols */
 
 	DEBUG("INIT COMPLETE\n");
 }
@@ -85,7 +92,7 @@ int rename(const char *oldpath, const char *newpath)
 	if(S_ISDIR(oldpathStat.st_mode))
 	{
 		/* we are, so redirect to "mv" */
-		DEBUG_FORCE("REROUTING DIRECTORY rename(%s, %s) to mv()\n", oldpath, newpath);
+		DEBUG("REROUTING DIRECTORY rename(%s, %s) to mv()\n", oldpath, newpath);
 
 		/* first try the original rename to check for permissions etc.
 		 * CSRBfs will report EXDEV if it worked */
@@ -100,6 +107,7 @@ int rename(const char *oldpath, const char *newpath)
 
 		char cmd[32768];
 		snprintf(cmd, sizeof(cmd), "/usr/bin/mv '%s' '%s'", oldpath, newpath);
+
 		ret = system(cmd);
 		if(ret == 0)
 		{
@@ -112,6 +120,7 @@ int rename(const char *oldpath, const char *newpath)
 	}
 	else
 	{
+		DEBUG("calling originalrename(%s, %s)\n", oldpath, newpath);
 
 		errno = 0;
 

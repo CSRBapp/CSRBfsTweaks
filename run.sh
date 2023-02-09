@@ -2,8 +2,7 @@
 
 #export CSRBFSTWEAKSDEBUG=1
 
-#TWEAKSDIR=$(dirname $(realpath -s $0))
-TWEAKSDIR=/CSRBfsTweaks/
+TWEAKSDIR=$(dirname $(realpath -s $0))
 
 export LD_BIND_NOW=BIND
 
