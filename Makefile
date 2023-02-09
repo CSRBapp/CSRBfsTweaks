@@ -19,5 +19,9 @@ clean:
 	echo Cleaning
 	rm -f CSRBfsTweaks.so core.*
 
+.PHONY: rebuild
 rebuild: clean all
 
+.PHONY: fixperms
+fixperms:
+	chmod 0755 CSRBfsTweaks.so install.sh run.sh
