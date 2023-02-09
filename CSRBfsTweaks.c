@@ -87,6 +87,17 @@ int rename(const char *oldpath, const char *newpath)
 		/* we are, so redirect to "mv" */
 		DEBUG_FORCE("REROUTING DIRECTORY rename(%s, %s) to mv()\n", oldpath, newpath);
 
+		/* first try the original rename to check for permissions etc.
+		 * CSRBfs will report EXDEV if it worked */
+		
+		ret = original_rename(oldpath, newpath);
+		if(ret && (errno != EXDEV))
+		{
+			return -1;
+		}
+
+		/* got EXDEV so redirect to mv */
+
 		char cmd[32768];
 		snprintf(cmd, sizeof(cmd), "/usr/bin/mv '%s' '%s'", oldpath, newpath);
 		ret = system(cmd);
