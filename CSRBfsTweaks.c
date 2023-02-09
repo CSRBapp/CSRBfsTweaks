@@ -75,7 +75,7 @@ int rename(const char *oldpath, const char *newpath)
 	DEBUG("rename(%s, %s)\n", oldpath, newpath);
 
 	/* check if we are renameing a directory */
-	ret = stat(oldpath, &oldpathStat);
+	ret = lstat(oldpath, &oldpathStat);
 	if(ret)
 	{
 		/* stat failed so pass back the error */
