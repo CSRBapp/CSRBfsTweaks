@@ -101,9 +101,20 @@ int rename(const char *oldpath, const char *newpath)
 		char cmd[32768];
 		snprintf(cmd, sizeof(cmd), "/usr/bin/mv '%s' '%s'", oldpath, newpath);
 		ret = system(cmd);
+		if(ret == 0)
+		{
+			errno = 0;
+		}
+		else
+		{
+			errno = EIO;
+		}
 	}
 	else
 	{
+
+		errno = 0;
+
 		ret = original_rename(oldpath, newpath);
 	}
 
