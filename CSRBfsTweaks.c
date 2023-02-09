@@ -15,7 +15,9 @@ static int (*original_renameat)(int olddirfd, const char *oldpath, int newdirfd,
 static int (*original_renameat2)(int olddirfd, const char *oldpath, int newdirfd, const char *newpath, unsigned int flags) = NULL;
 #endif
 
-unsigned CSRBfsTweaksInitDebugEnabled;
+static long (*original_pathconf)(const char *path, int name) = NULL;
+
+unsigned CSRBfsTweaksInitDebugEnabled = 0;
 
 #define DEBUG_FORCE(...) fprintf(stderr, "*** [CSRBfsTweaks]: " __VA_ARGS__)
 
@@ -57,6 +59,8 @@ __attribute__((constructor)) static void CSRBfsTweaksInit(void)
 	original_rename = dlsym(RTLD_NEXT, "rename");
 	original_renameat = dlsym(RTLD_NEXT, "renameat");
 	original_renameat2 = dlsym(RTLD_NEXT, "renameat2");
+
+	original_pathconf = dlsym(RTLD_NEXT, "pathconf");
 
 	/* TODO: asset the backedup symbols */
 
@@ -121,4 +125,34 @@ int renameat2(int olddirfd, const char *oldpath, int newdirfd, const char *newpa
 }
 
 #endif // INTERCEPT_RENAMEAT
- 
+
+long pathconf(const char *path, int name)
+{
+	long ret;
+	char rpath[PATH_MAX];
+
+	if(!realpath(path, rpath))
+	{
+		return 0;
+	}
+
+	DEBUG("pathconf(%p [%s][%s], %d)\n", path, path, rpath, name);
+
+	switch(name)
+	{
+		case _PC_NAME_MAX: /* The maximum length of a filename in the directory path or fd that the process is allowed to create. */
+			ret = 512 - strlen(rpath) + strlen("/mnt/CSRB/FS/00000000000000000000000000000000") - 1;
+			break;
+		case _PC_PATH_MAX: /* The maximum length of a relative pathname when path or fd is the current working directory. */
+			ret = 512 - strlen(rpath) + strlen("/mnt/CSRB/FS/00000000000000000000000000000000");
+			break;
+		default:
+			ret = original_pathconf(path, name);
+			break;
+	}
+
+	DEBUG("pathconf ret:%ld\n", ret);
+
+	return ret;
+}
+
