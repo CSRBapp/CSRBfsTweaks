@@ -118,7 +118,7 @@ int rename(const char *oldpath, const char *newpath)
 		ret = original_rename(oldpath, newpath);
 	}
 
-	return ret;
+	return (ret ? -1 : 0);
 }
 
 #ifdef INTERCEPT_RENAMEAT
