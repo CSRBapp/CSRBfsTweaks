@@ -1,11 +1,13 @@
-#!/bin/bash
+#!/bin/sh
 
 #export CSRBFSTWEAKSDEBUG=1
 
 TWEAKSDIR=$(dirname $(realpath -s $0))
+TWEAKSDIR_CHROOT=/CSRBfsTweaks/
 
 export LD_BIND_NOW=BIND
 
+#export LD_PRELOAD="$TWEAKSDIR/CSRBfsTweaks.so $TWEAKSDIR_CHROOT/CSRBfsTweaks.so"
 export LD_PRELOAD=$TWEAKSDIR/CSRBfsTweaks.so
 
 #export LD_LIBRARY_PATH=./:$LD_LIBRARY_PATH
