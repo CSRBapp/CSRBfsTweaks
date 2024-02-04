@@ -81,7 +81,7 @@ int rename(const char *oldpath, const char *newpath)
 
 	DEBUG("rename(%s, %s)\n", oldpath, newpath);
 
-	/* check if we are renameing a directory */
+	/* check if we are renaming a directory */
 	ret = lstat(oldpath, &oldpathStat);
 	if(ret)
 	{
@@ -103,7 +103,7 @@ int rename(const char *oldpath, const char *newpath)
 			return -1;
 		}
 
-		/* got EXDEV so redirect to mv */
+		/* got EXDEV, so retry with "mv" instead */
 
 		char cmd[32768];
 		snprintf(cmd, sizeof(cmd), "/usr/bin/mv '%s' '%s'", oldpath, newpath);

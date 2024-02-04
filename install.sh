@@ -2,6 +2,7 @@
 
 mkdir "$1"
 cp -p CSRBfsTweaks.so run.sh "$1/"
+chmod 777 "$1/CSRBfsTweaks.so"
 
 #cat /lib/x86_64-linux-gnu/libc.so.6 > "$1/libc.so.6"
 #cat /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 > "$1/ld-linux-x86-64.so.2"
