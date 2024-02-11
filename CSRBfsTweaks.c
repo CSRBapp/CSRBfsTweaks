@@ -81,50 +81,37 @@ int rename(const char *oldpath, const char *newpath)
 
 	DEBUG("rename(%s, %s)\n", oldpath, newpath);
 
-	/* check if we are renaming a directory */
-	ret = lstat(oldpath, &oldpathStat);
-	if(ret)
+	/* first try the original rename to check for permissions etc.
+	 * CSRBfs will report EXDEV if it worked */
+
+	ret = original_rename(oldpath, newpath);
+	if(ret == 0)
 	{
-		/* stat failed so pass back the error */
+		/* success */
 		return ret;
 	}
 
-	if(S_ISDIR(oldpathStat.st_mode))
+	/* so, there was an error */
+
+	if(errno != EXDEV)
 	{
-		/* we are, so redirect to "mv" */
-		DEBUG("REROUTING DIRECTORY rename(%s, %s) to mv()\n", oldpath, newpath);
+		/* unhandled error */
+		return ret;
+	}
 
-		/* first try the original rename to check for permissions etc.
-		 * CSRBfs will report EXDEV if it worked */
-		
-		ret = original_rename(oldpath, newpath);
-		if(ret && (errno != EXDEV))
-		{
-			return -1;
-		}
+	/* got EXDEV, so retry with "mv" instead */
 
-		/* got EXDEV, so retry with "mv" instead */
+	char cmd[32768];
+	snprintf(cmd, sizeof(cmd), "/usr/bin/mv '%s' '%s'", oldpath, newpath);
 
-		char cmd[32768];
-		snprintf(cmd, sizeof(cmd), "/usr/bin/mv '%s' '%s'", oldpath, newpath);
-
-		ret = system(cmd);
-		if(ret == 0)
-		{
-			errno = 0;
-		}
-		else
-		{
-			errno = EIO;
-		}
+	ret = system(cmd);
+	if(ret == 0)
+	{
+		errno = 0;
 	}
 	else
 	{
-		DEBUG("calling originalrename(%s, %s)\n", oldpath, newpath);
-
-		errno = 0;
-
-		ret = original_rename(oldpath, newpath);
+		errno = EIO;
 	}
 
 	return (ret ? -1 : 0);
