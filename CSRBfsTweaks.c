@@ -77,7 +77,6 @@ __attribute__((constructor)) static void CSRBfsTweaksInit(void)
 int rename(const char *oldpath, const char *newpath)
 {
 	int ret;
-	struct stat oldpathStat;
 
 	DEBUG("rename(%s, %s)\n", oldpath, newpath);
 
